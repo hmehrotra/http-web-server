@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/HTTPWebServer.iml" filepath="$PROJECT_DIR$/HTTPWebServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/HttpClient/HttpClient.iml" filepath="$PROJECT_DIR$/HttpClient/HttpClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/HttpProxyServer/HttpProxyServer.iml" filepath="$PROJECT_DIR$/HttpProxyServer/HttpProxyServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/HttpWebServer/HttpWebServer.iml" filepath="$PROJECT_DIR$/HttpWebServer/HttpWebServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LoadBalancer/LoadBalancer.iml" filepath="$PROJECT_DIR$/LoadBalancer/LoadBalancer.iml" />
+    </modules>
+  </component>
+</project>
+
