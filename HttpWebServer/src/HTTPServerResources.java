@@ -1,3 +1,6 @@
+import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+
 /**
  * Contains configurations for HTTP Web Server
  *
@@ -6,10 +9,10 @@
  */
 public class HTTPServerResources {
 
-    public static final int PORT = 8001;
-    public static final int MAX_QUEUE_SIZE = 100;
-    public static final int MAX_WORKER_THREADS = 10;
-    public static final int MAX_MASTER_THREADS = 2;
+    protected static final int MAX_QUEUE_SIZE = 100;
+    protected static final int MAX_WORKER_THREADS = 10;
 
     /* request queue */
+    protected static BlockingQueue <Socket> requestQueue;
+
 }

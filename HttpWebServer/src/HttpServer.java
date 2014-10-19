@@ -1,11 +1,19 @@
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * <p>
- *  Implementation of HTTP Server. This class contains a bare bone skeleton to instantiate master and slave threads.
- *  Thread pool management for both master and slave thread is done through Executors.
- *  Also the functionality of both master and worker threads is explained in respective classes
+ *  Implementation of HTTP Server. This class does the following
+ *  1) Instantiates {@link ExecutorService} for managing worker thread pool
+ *  2) Registers HTTP server for shutdown even
+ *  3) Listens to all incoming requests ideally from a HTTPClient (or load balancer) and adds
+ *     them to blocking queue to be processed by one of the worker threads
+ *
+ *  The functionality of worker threads is explained {@link WorkerThread}
  * </p>
  *
  * @author Harshit Mehrotra
@@ -14,9 +22,11 @@ import java.util.concurrent.Executors;
 public class HttpServer {
 
     private static final HTTPServerResources _serverResources = new HTTPServerResources();
-    private static ExecutorService _masterPool;
     private static ExecutorService _workerPool;
     private static HttpServer _httpServer;
+
+    private static int serverPort;
+    private static volatile boolean shouldContinueRunning;
 
     private HttpServer(){}
 
@@ -27,30 +37,61 @@ public class HttpServer {
         return _httpServer;
     }
 
-    private ExecutorService getMasterPool(){
-        return _masterPool;
-    }
-
     private ExecutorService getWorkerPool(){
         return _workerPool;
     }
 
     /* Constructor initializes the thread pools */
-    public void initializeThreadExecutors(){
-        /* Create master and worker fixed thread pools */
-        _masterPool = Executors.newFixedThreadPool(_serverResources.MAX_MASTER_THREADS);
+    private void initialize(){
+        shouldContinueRunning = true;
 
+        HTTPServerResources.requestQueue = new ArrayBlockingQueue<Socket>(HTTPServerResources.MAX_QUEUE_SIZE);
+
+        /* Create worker fixed thread pools */
         _workerPool = Executors.newFixedThreadPool(_serverResources.MAX_WORKER_THREADS);
     }
 
-    public static void main(String args[]){
-        HttpServer.getInstance().initializeThreadExecutors();
+    /**
+     * Registers server for capturing runtime shutdown events
+     */
+    private void registerShutdown(){
+        // Capture shutdown requests
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            @Override
+            public void run(){
 
+            }
+        });
+    }
+
+    public static void main(String args[]){
+
+        // Initialize server resources
+        HttpServer.getInstance().initialize();
+
+        // Register server for shutdown events
+        HttpServer.getInstance().registerShutdown();
+
+        // Start executor service for Worker thread pool
         Thread worker = new Thread(new WorkerThreadExecutor(HttpServer.getInstance().getWorkerPool()));
         worker.start();
 
-        while(true){
-            HttpServer.getInstance().getMasterPool().execute(new MasterThread(8001));
+        try{
+            // Read port number argument
+            serverPort = Integer.parseInt(args[0]);
+            ServerSocket serverSocket = new ServerSocket(serverPort);
+
+            // Listen indefinitely to incoming HTTP requests
+            while (shouldContinueRunning){
+                Socket socket = serverSocket.accept();
+                HTTPServerResources.requestQueue.add(socket);
+            }
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("No input provided for port number");
+        }
+        catch(IOException e){
+
         }
     }
 }

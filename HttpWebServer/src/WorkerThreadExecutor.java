@@ -1,3 +1,4 @@
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -7,13 +8,22 @@ import java.util.concurrent.ExecutorService;
  * Date: July 26, 2014
  */
 public class WorkerThreadExecutor implements Runnable{
-    private ExecutorService workerPool;
+    private static final HTTPServerResources _serverResources = new HTTPServerResources();
+    private ExecutorService _workerPool;
 
-    public WorkerThreadExecutor(ExecutorService masterPool){
-        this.workerPool = masterPool;
+    public WorkerThreadExecutor(ExecutorService workerPool){
+        _workerPool = workerPool;
     }
+
     public void run(){
-        while(true)
-            workerPool.execute(new WorkerThread());
+        while(true){
+            try{
+                Socket socket = _serverResources.requestQueue.take();
+                _workerPool.execute(new WorkerThread(socket));
+            }
+            catch(InterruptedException it){
+                System.out.println("Reading from blocking queue interrupted");
+            }
+        }
     }
 }
