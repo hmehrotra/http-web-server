@@ -25,7 +25,8 @@ public class HttpServer {
     private static ExecutorService _workerPool;
     private static HttpServer _httpServer;
 
-    private static int serverPort;
+    private static int _serverPort;
+    private static ServerSocket _serverSocket;
     private static volatile boolean shouldContinueRunning;
 
     private HttpServer(){}
@@ -41,7 +42,9 @@ public class HttpServer {
         return _workerPool;
     }
 
-    /* Constructor initializes the thread pools */
+    /**
+     *  Constructor initializes the thread pools
+     **/
     private void initialize(){
         shouldContinueRunning = true;
 
@@ -64,6 +67,27 @@ public class HttpServer {
         });
     }
 
+    /**
+     * Starts the HTTP server and listens and responds to requests
+     */
+    private void start(int port) throws IOException{
+
+       // Read port number argument
+       _serverPort = port;
+       _serverSocket = new ServerSocket(_serverPort);
+
+       // Listen indefinitely to incoming HTTP requests
+       while (shouldContinueRunning){
+          try{
+               Socket socket = _serverSocket.accept();
+               HTTPServerResources.requestQueue.add(socket);
+          }
+          catch(IOException e){
+              System.out.print("IOException occurred during accepting requests:" + e.getMessage());
+          }
+       }
+    }
+
     public static void main(String args[]){
 
         // Initialize server resources
@@ -77,21 +101,14 @@ public class HttpServer {
         worker.start();
 
         try{
-            // Read port number argument
-            serverPort = Integer.parseInt(args[0]);
-            ServerSocket serverSocket = new ServerSocket(serverPort);
-
-            // Listen indefinitely to incoming HTTP requests
-            while (shouldContinueRunning){
-                Socket socket = serverSocket.accept();
-                HTTPServerResources.requestQueue.add(socket);
-            }
+            // start the server
+            HttpServer.getInstance().start(Integer.parseInt(args[0]));
         }
         catch(ArrayIndexOutOfBoundsException e){
-            System.out.println("No input provided for port number");
+            System.out.println("No or invalid input provided for port number");
         }
         catch(IOException e){
-
+            System.out.print("IOException occurred during starting server:" + e.getMessage());
         }
     }
 }

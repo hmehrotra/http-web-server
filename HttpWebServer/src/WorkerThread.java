@@ -4,6 +4,7 @@ import java.net.Socket;
  * <p>
  *  This class contains implementation of worker threads for HTTP Web server.
  *  Each worker threads reads request from a given socket and responds to it.
+ *  It is responsibility of worker thread (or proxy server) to close this socket.
  *
  *  It future extension, a worker thread will delegate request for image compression to a proxy server
  * </p>
